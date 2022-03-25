@@ -32,6 +32,15 @@ typedef struct {
     char* code;
 }HuffmanTable;
 
+void Init(AlphaType* p)
+{
+    for (int i = 0; i < ALPHABET; i++)
+    {
+        p[i].alpha = i + 65;
+        p[i].freq = 0;
+    }
+}
+
 void initHuffmanTable(HuffmanTable* ht) {
     ht->alpha = '\0';
     ht->code = (char*)malloc(sizeof(char));
@@ -92,28 +101,6 @@ TreeNode* MakeNode(TreeNode* left, TreeNode* right) // 노드 생성
     return node;
 }
 
-int j = 0;
-int BuildTable(TreeNode* p, int i, char* pCode, HuffmanTable* ht)
-{
-    if (p)
-    {
-        i++;
-        pCode[i] = '1';
-        BuildTable(p->left_child, i, pCode, ht);
-        pCode[i] = '0';
-        BuildTable(p->right_child, i, pCode, ht);
-        pCode[i] = '\0';
-
-        if (p->left_child == NULL && p->right_child == NULL)
-        {
-            ht[j].alpha = p->weight.alpha;
-            strcpy_s(ht[j].code, strlen(pCode)+1, pCode);
-            j++;
-        }
-    }
-    return j;
-}
-
 int DestroyTree(TreeNode* p)
 {
     if (p == NULL) return -1;
@@ -126,10 +113,10 @@ int DestroyTree(TreeNode* p)
     return 1;
 }
 
-Element* HuffmanTree(AlphaType* pArr, int n)
+Element HuffmanTree(AlphaType* pArr, int n, Element e)
 {
     TreeNode* node, * temp;
-    Element e, e1, e2;
+    Element e1, e2;
     HeapType heap;
     char binaryCode[100];
     int i;
@@ -159,22 +146,35 @@ Element* HuffmanTree(AlphaType* pArr, int n)
     }
     e = DeleteHeap(&heap); // 여기서 꺼낸 데이터는 완성된 트리 
 
-    return &e;//트리 반환
+    return e;//트리 반환
 }
 
-void Init(AlphaType* p)
+int GLOBAL = 0;
+int BuildTable(TreeNode* p, int i, char* pCode, HuffmanTable* ht)
 {
-    for (int i = 0; i < ALPHABET; i++)
+    if (p)
     {
-        p[i].alpha = i + 65;
-        p[i].freq = 0;
+        i++;
+        pCode[i] = '1';
+        BuildTable(p->left_child, i, pCode, ht);
+        pCode[i] = '0';
+        BuildTable(p->right_child, i, pCode, ht);
+        pCode[i] = '\0';
+
+        if (p->left_child == NULL && p->right_child == NULL)
+        {
+            ht[GLOBAL].alpha = p->weight.alpha;
+            strcpy_s(ht[GLOBAL].code, strlen(pCode) + 1, pCode);
+            GLOBAL++;
+        }
     }
+    return GLOBAL;
 }
 
 int main()
 {
-    AlphaType data[ALPHABET]; // 문자열의 갯수 저장을 위한 변수 
-    AlphaType* copyData; // 존재하는 문자열의 갯수 저장을 위한 변수 
+    AlphaType data[ALPHABET]; // 문자열의 갯수 저장
+    AlphaType* copyData; // 입력받은 문자열의 갯수 저장
 
     Init(data);
 
@@ -202,7 +202,7 @@ int main()
             if (i == str[j])
             {
                 data[i - 65].freq++;
-                flag = 1; // i값의 알파벳이 존재 
+                flag = 1; // i값의 알파벳이 존재
             }
         }
         if (flag == 1)
@@ -225,8 +225,8 @@ int main()
     for (i = 0; i < count; i++)
         printf("  %c         %d \n", copyData[i].alpha, copyData[i].freq);
 
-    Element* ep = NULL;
-    ep = HuffmanTree(copyData, count);
+    Element e = {0,};
+    e = HuffmanTree(copyData, count, e);
     char pCode[ALPHABET];
 
     HuffmanTable* ht = (HuffmanTable*)malloc(sizeof(HuffmanTable)* ALPHABET);
@@ -235,7 +235,8 @@ int main()
         initHuffmanTable(&ht[i]);
     }
 
-    htCount = BuildTable(ep->pTree, -1, pCode, ht);//허프만 테이블 크기 반환
+    htCount = BuildTable(e.pTree, -1, pCode, ht);//허프만 테이블 생성 및 크기 반환
+    DestroyTree(e.pTree);//트리 해제
 
     printf("\n- Huffman Table -\n");
     for (i = 0; ht[i].alpha != '\0'; i++) {
@@ -254,7 +255,7 @@ int main()
         fclose(fp);
     }
 
-    if (fopen_s(&fp, "output.txt", "r") == 0) {
+    if (fopen_s(&fp, "output.txt", "r") == 0) {//압축 파일 읽기
         char buffer[MAX_LEN] = { 0, };
 
         fread(buffer, 1, MAX_LEN, fp);
@@ -278,10 +279,10 @@ int main()
                     break;
                 }
             }
-            if (j == htCount) {
+            if (j == htCount) {//일치하는 코드가 없다면 다음 비트까지 읽기
                 strncat_s(code, sizeof(code), &str[i + 1], 1);
             }
-            else {
+            else {//일치하는 코드라면 초기화
                 code[0] = str[i + 1];
                 code[1] = '\0';
             }
