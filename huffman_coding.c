@@ -85,8 +85,8 @@ Element DeleteHeap(HeapType* h)
     return data;
 }
 
-TreeNode* MakeNode(TreeNode* left, TreeNode* right) // 노드 생성 
-{
+TreeNode* MakeNode(TreeNode* left, TreeNode* right)
+{//동적 할당으로 생성, DestroyTree()를 통해 한 번에 회수
     TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));
 
     if (node == NULL)
@@ -102,7 +102,7 @@ TreeNode* MakeNode(TreeNode* left, TreeNode* right) // 노드 생성
 }
 
 int DestroyTree(TreeNode* p)
-{
+{//트리 구성을 위해 동적 할당된 모든 자원을 회수
     if (p == NULL) return -1;
 
     DestroyTree(p->left_child);
@@ -114,7 +114,7 @@ int DestroyTree(TreeNode* p)
 }
 
 Element HuffmanTree(AlphaType* pArr, int n, Element e)
-{
+{//MinHeap을 통해 정렬된 Node를 HuffmanTree에 차례대로 삽입
     TreeNode* node, * temp;
     Element e1, e2;
     HeapType heap;
