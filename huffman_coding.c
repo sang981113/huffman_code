@@ -118,7 +118,6 @@ Element HuffmanTree(AlphaType* pArr, int n, Element e)
     TreeNode* node, * temp;
     Element e1, e2;
     HeapType heap;
-    char binaryCode[100];
     int i;
 
     heap.heap_size = 0;
@@ -188,7 +187,7 @@ int main()
         char buffer[MAX_LEN] = { 0, };
 
         fread(buffer, 1, MAX_LEN, fp);
-        str = &buffer;
+        str = buffer;
 
         fclose(fp);
     }
@@ -213,7 +212,7 @@ int main()
 
     for (i = 0; i < ALPHABET; i++)
     {
-        if (data[i].freq != NULL) // 존재하는 문자만 복사 
+        if (data[i].freq != 0) // 존재하는 문자만 복사 
         {
             copyData[k].alpha = i + 65;
             copyData[k].freq = data[i].freq;
@@ -259,7 +258,7 @@ int main()
         char buffer[MAX_LEN] = { 0, };
 
         fread(buffer, 1, MAX_LEN, fp);
-        str = &buffer;
+        str = buffer;
 
         fclose(fp);
     }
